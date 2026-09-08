@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Placement Management System</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:#f4f6fb;color:#202938}
+header{height:65px;background:#10265f;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 25px;position:fixed;top:0;left:0;right:0;z-index:10}
+.logo{font-size:21px;font-weight:bold}
+.admin{background:#213875;padding:10px 18px;border-radius:22px}
+.layout{display:flex;padding-top:65px}
+.sidebar{width:225px;background:#fff;position:fixed;top:65px;bottom:0;padding:20px 13px;box-shadow:2px 0 8px #ddd}
+.sidebar h3{text-align:center;margin-bottom:20px}
+.menu{padding:13px;margin:6px 0;border-radius:8px;cursor:pointer;color:#555}
+.menu:hover,.menu.active{background:#e8edff;color:#10265f;font-weight:bold}
+main{margin-left:225px;width:calc(100% - 225px);padding:30px}
+.page{display:none}.page.active{display:block}
+.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
+.head h1{color:#10265f}.head p{color:#777;margin-top:5px}
+.btn{border:0;padding:10px 15px;border-radius:7px;cursor:pointer;font-weight:bold}
+.primary{background:#10265f;color:#fff}.danger{background:#fee2e2;color:#b91c1c}
+.warning{background:#fff0c2;color:#8a6500}.success{background:#dcfce7;color:#08752c}
+.light{background:#eef1f6;color:#333}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:25px}
+.card{background:#fff;padding:22px;border-radius:12px;text-align:center;box-shadow:0 3px 12px #ddd}
+.card i{font-size:28px;font-style:normal}.card h2{font-size:28px;margin:8px}.card p{color:#777}
+.box{background:#fff;padding:22px;border-radius:12px;box-shadow:0 3px 12px #ddd;margin-bottom:22px}
+.box h2{margin-bottom:18px;color:#10265f}
+table{width:100%;border-collapse:collapse}
+th{background:#10265f;color:#fff;padding:12px;text-align:left;font-size:13px}
+td{padding:12px;border-bottom:1px solid #eee;font-size:14px}
+.badge{padding:5px 9px;border-radius:15px;font-size:12px;font-weight:bold}
+.search{padding:11px;width:100%;border:1px solid #ddd;border-radius:7px;margin-bottom:15px;outline:none}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.company,.drive{background:#fff;padding:20px;border-radius:12px;box-shadow:0 3px 12px #ddd}
+.company h3,.drive h3{color:#10265f;margin-bottom:10px}
+.company p,.drive p{color:#666;margin:7px 0}
+.actions{margin-top:15px;display:flex;gap:7px}
+.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;z-index:20;padding:15px}
+.modal.show{display:flex}
+.modal-box{background:#fff;width:480px;max-width:100%;padding:25px;border-radius:12px}
+.modal-head{display:flex;justify-content:space-between;margin-bottom:20px}
+.close{border:0;background:#eee;border-radius:50%;width:32px;height:32px;cursor:pointer}
+.form{margin-bottom:14px}.form label{display:block;font-size:13px;font-weight:bold;margin-bottom:5px}
+.input,.form select{width:100%;padding:11px;border:1px solid #ddd;border-radius:7px}
+.form-buttons{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.toast{display:none;position:fixed;right:20px;bottom:20px;background:#10265f;color:white;padding:14px 20px;border-radius:8px;z-index:30}
+.toast.show{display:block}
+@media(max-width:900px){
+.cards{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:650px){
+.sidebar{width:180px}main{margin-left:180px;width:calc(100% - 180px);padding:18px}
+.cards,.grid{grid-template-columns:1fr}.logo{font-size:16px}.admin{padding:8px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="logo">🎓 Placement Management System</div>
+<div class="admin">👤 Admin</div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+<h3>📊 MENU</h3>
+
+<div class="menu active" onclick="page('dashboard',this)">🏠 Dashboard</div>
+<div class="menu" onclick="page('students',this)">👨‍🎓 Students</div>
+<div class="menu" onclick="page('companies',this)">🏢 Companies</div>
+<div class="menu" onclick="page('drives',this)">💼 Placement Drives</div>
+<div class="menu" onclick="page('applications',this)">📝 Applications</div>
+</aside>
+
+<main>
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="page active">
+
+<div class="head">
+<div>
+<h1>Dashboard</h1>
+<p>Placement Management Overview</p>
+</div>
+<button class="btn primary" onclick="openStudent()">+ Add Student</button>
+</div>
+
+<div class="cards">
+<div class="card"><i>👨‍🎓</i><h2 id="studentCount">0</h2><p>Total Students</p></div>
+<div class="card"><i>🏢</i><h2 id="companyCount">6</h2><p>Companies</p></div>
+<div class="card"><i>💼</i><h2 id="driveCount">4</h2><p>Placement Drives</p></div>
+<div class="card"><i>🎯</i><h2 id="placedCount">0</h2><p>Students Placed</p></div>
+</div>
+
+<div class="box">
+<h2>Recent Students</h2>
+<table>
+<thead>
+<tr><th>ID</th><th>Name</th><th>Course</th><th>Year</th><th>Status</th></tr>
+</thead>
+<tbody id="dashStudents"></tbody>
+</table>
+</div>
+
+</section>
+
+
+<!-- STUDENTS -->
+<section id="students" class="page">
+
+<div class="head">
+<div><h1>Students</h1><p>Manage student information</p></div>
+<button class="btn primary" onclick="openStudent()">+ Add Student</button>
+</div>
+
+<div class="box">
+<input id="studentSearch" class="search" placeholder="🔍 Search student..." onkeyup="studentsTable()">
+
+<table>
+<thead>
+<tr>
+<th>ID</th><th>Name</th><th>Email</th><th>Phone</th>
+<th>Course</th><th>Status</th><th>Action</th>
+</tr>
+</thead>
+<tbody id="studentTable"></tbody>
+</table>
+</div>
+
+</section>
+
+
+<!-- COMPANIES -->
+<section id="companies" class="page">
+
+<div class="head">
+<div><h1>Companies</h1><p>Placement partner companies</p></div>
+<button class="btn primary" onclick="openCompany()">+ Add Company</button>
+</div>
+
+<div class="grid" id="companyGrid"></div>
+
+</section>
+
+
+<!-- DRIVES -->
+<section id="drives" class="page">
+
+<div class="head">
+<div><h1>Placement Drives</h1><p>Upcoming campus placement drives</p></div>
+<button class="btn primary" onclick="openDrive()">+ Add Drive</button>
+</div>
+
+<div class="grid" id="driveGrid"></div>
+
+</section>
+
+
+<!-- APPLICATIONS -->
+<section id="applications" class="page">
+
+<div class="head">
+<div><h1>Applications</h1><p>Manage placement applications</p></div>
+<button class="btn primary" onclick="openApplication()">+ New Application</button>
+</div>
+
+<div class="box">
+<table>
+<thead>
+<tr><th>ID</th><th>Student</th><th>Company</th><th>Role</th><th>Status</th></tr>
+</thead>
+<tbody id="applicationTable"></tbody>
+</table>
+</div>
+
+</section>
+
+</main>
+</div>
+
+
+<!-- STUDENT MODAL -->
+<div class="modal" id="studentModal">
+<div class="modal-box">
+<div class="modal-head"><h2 id="studentTitle">Add Student</h2>
+<button class="close" onclick="closeModal('studentModal')">×</button></div>
+
+<form onsubmit="saveStudent(event)">
+<input type="hidden" id="editId">
+
+<div class="form"><label>Name</label>
+<input class="input" id="sName" required></div>
+
+<div class="form"><label>Email</label>
+<input class="input" id="sEmail" type="email" required></div>
+
+<div class="form"><label>Phone</label>
+<input class="input" id="sPhone" required></div>
+
+<div class="form"><label>Course</label>
+<select id="sCourse" class="input">
+<option>BCS</option><option>BCA</option><option>MCA</option><option>BBA</option>
+</select></div>
+
+<div class="form"><label>Status</label>
+<select id="sStatus" class="input">
+<option>Eligible</option><option>Placed</option><option>Not Eligible</option>
+</select></div>
+
+<div class="form-buttons">
+<button type="button" class="btn light" onclick="closeModal('studentModal')">Cancel</button>
+<button class="btn primary">Save Student</button>
+</div>
+</form>
+</div>
+</div>
+
+
+<!-- COMPANY MODAL -->
+<div class="modal" id="companyModal">
+<div class="modal-box">
+<div class="modal-head"><h2>Add Company</h2>
+<button class="close" onclick="closeModal('companyModal')">×</button></div>
+
+<form onsubmit="saveCompany(event)">
+
+<div class="form"><label>Company Name</label>
+<input class="input" id="cName" required></div>
+
+<div class="form"><label>Job Role</label>
+<input class="input" id="cRole" required></div>
+
+<div class="form"><label>Package</label>
+<input class="input" id="cPackage" placeholder="5 LPA" required></div>
+
+<div class="form"><label>Location</label>
+<input class="input" id="cLocation" placeholder="Pune" required></div>
+
+<div class="form-buttons">
+<button type="button" class="btn light" onclick="closeModal('companyModal')">Cancel</button>
+<button class="btn primary">Add Company</button>
+</div>
+</form>
+</div>
+</div>
+
+
+<!-- DRIVE MODAL -->
+<div class="modal" id="driveModal">
+<div class="modal-box">
+<div class="modal-head"><h2>Add Placement Drive</h2>
+<button class="close" onclick="closeModal('driveModal')">×</button></div>
+
+<form onsubmit="saveDrive(event)">
+
+<div class="form"><label>Company</label>
+<input class="input" id="dCompany" required></div>
+
+<div class="form"><label>Job Role</label>
+<input class="input" id="dRole" required></div>
+
+<div class="form"><label>Date</label>
+<input class="input" type="date" id="dDate" required></div>
+
+<div class="form"><label>Eligibility</label>
+<input class="input" id="dEligibility" placeholder="BCS / BCA" required></div>
+
+<div class="form-buttons">
+<button type="button" class="btn light" onclick="closeModal('driveModal')">Cancel</button>
+<button class="btn primary">Add Drive</button>
+</div>
+</form>
+</div>
+</div>
+
+
+<!-- APPLICATION MODAL -->
+<div class="modal" id="applicationModal">
+<div class="modal-box">
+<div class="modal-head"><h2>New Application</h2>
+<button class="close" onclick="closeModal('applicationModal')">×</button></div>
+
+<form onsubmit="saveApplication(event)">
+
+<div class="form"><label>Student</label>
+<select id="aStudent" class="input"></select></div>
+
+<div class="form"><label>Company</label>
+<select id="aCompany" class="input"></select></div>
+
+<div class="form"><label>Job Role</label>
+<input class="input" id="aRole" required></div>
+
+<div class="form-buttons">
+<button type="button" class="btn light" onclick="closeModal('applicationModal')">Cancel</button>
+<button class="btn primary">Submit Application</button>
+</div>
+</form>
+</div>
+</div>
+
+
+<div id="toast" class="toast"></div>
+
+
+<script>
+
+/* ================= API ================= */
+
+let students=[];
+
+async function getAPI(){
+
+try{
+
+let res=await fetch("https://dummyjson.com/users?limit=10");
+let data=await res.json();
+
+students=data.users.map((u,i)=>({
+
+id:u.id,
+name:u.firstName+" "+u.lastName,
+email:u.email,
+phone:u.phone,
+course:i%2?"BCA":"BCS",
+status:i%3===0?"Placed":"Eligible"
+
+}));
+
+renderAll();
+toast("Student data loaded from API ✓");
+
+}catch(e){
+
+students=[
+{id:1,name:"Rahul Patil",email:"rahul@gmail.com",phone:"9876543210",course:"BCS",status:"Eligible"},
+{id:2,name:"Priya Sharma",email:"priya@gmail.com",phone:"9876543211",course:"BCA",status:"Placed"},
+{id:3,name:"Rohan Deshmukh",email:"rohan@gmail.com",phone:"9876543212",course:"BCS",status:"Eligible"},
+{id:4,name:"Sneha Jadhav",email:"sneha@gmail.com",phone:"9876543213",course:"BCA",status:"Placed"}
+];
+
+renderAll();
+toast("Offline student data loaded");
+
+}
+
+}
+
+
+/* ================= DATA ================= */
+
+let companies=[
+{name:"TCS",role:"Software Developer",pack:"4.5 LPA",loc:"Pune",icon:"💻"},
+{name:"Infosys",role:"System Engineer",pack:"4.2 LPA",loc:"Pune",icon:"🌐"},
+{name:"Wipro",role:"Project Engineer",pack:"4 LPA",loc:"Mumbai",icon:"🚀"},
+{name:"HCLTech",role:"Software Engineer",pack:"4.5 LPA",loc:"Noida",icon:"🏢"},
+{name:"Tech Mahindra",role:"Associate Engineer",pack:"4 LPA",loc:"Pune",icon:"🔷"},
+{name:"Persistent Systems",role:"Developer",pack:"5 LPA",loc:"Pune",icon:"⭐"}
+];
+
+let drives=[
+{company:"TCS",role:"Software Developer",date:"2026-09-15",elig:"BCS / BCA"},
+{company:"Infosys",role:"System Engineer",date:"2026-09-20",elig:"BCS / BCA"},
+{company:"Wipro",role:"Project Engineer",date:"2026-09-25",elig:"BCS / BCA"},
+{company:"HCLTech",role:"Software Engineer",date:"2026-09-30",elig:"BCS / BCA"}
+];
+
+let applications=[
+{student:"Priya Sharma",company:"TCS",role:"Software Developer",status:"Selected"},
+{student:"Rahul Patil",company:"Infosys",role:"System Engineer",status:"Pending"}
+];
+
+
+/* ================= NAVIGATION ================= */
+
+function page(id,el){
+
+document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+
+document.querySelectorAll(".menu").forEach(x=>x.classList.remove("active"));
+el.classList.add("active");
+
+}
+
+
+/* ================= STUDENTS ================= */
+
+function studentsTable(){
+
+let q=document.getElementById("studentSearch").value.toLowerCase();
+
+let html="";
+
+students.filter(s=>s.name.toLowerCase().includes(q)||s.email.toLowerCase().includes(q))
+.forEach(s=>{
+
+html+=`
+<tr>
+<td>${s.id}</td>
+<td><b>${s.name}</b></td>
+<td>${s.email}</td>
+<td>${s.phone}</td>
+<td>${s.course}</td>
+<td><span class="badge ${s.status==="Placed"?"success":"eligible"}">${s.status}</span></td>
+<td>
+<button class="btn warning" onclick="editStudent(${s.id})">✏️</button>
+<button class="btn danger" onclick="deleteStudent(${s.id})">🗑️</button>
+</td>
+</tr>`;
+
+});
+
+document.getElementById("studentTable").innerHTML=html;
+
+}
+
+
+function openStudent(){
+
+document.getElementById("studentTitle").innerText="Add Student";
+document.getElementById("editId").value="";
+document.querySelector("#studentModal form").reset();
+document.getElementById("studentModal").classList.add("show");
+
+}
+
+
+function saveStudent(e){
+
+e.preventDefault();
+
+let id=document.getElementById("editId").value;
+
+let obj={
+id:id?Number(id):Date.now(),
+name:document.getElementById("sName").value,
+email:document.getElementById("sEmail").value,
+phone:document.getElementById("sPhone").value,
+course:document.getElementById("sCourse").value,
+status:document.getElementById("sStatus").value
+};
+
+if(id){
+let i=students.findIndex(s=>s.id==id);
+students[i]=obj;
+toast("Student updated ✓");
+}else{
+students.push(obj);
+toast("Student added ✓");
+}
+
+closeModal("studentModal");
+renderAll();
+
+}
+
+
+function editStudent(id){
+
+let s=students.find(x=>x.id==id);
+if(!s)return;
+
+document.getElementById("studentTitle").innerText="Edit Student";
+document.getElementById("editId").value=s.id;
+document.getElementById("sName").value=s.name;
+document.getElementById("sEmail").value=s.email;
+document.getElementById("sPhone").value=s.phone;
+document.getElementById("sCourse").value=s.course;
+document.getElementById("sStatus").value=s.status;
+
+document.getElementById("studentModal").classList.add("show");
+
+}
+
+
+function deleteStudent(id){
+
+if(confirm("Delete this student?")){
+
+students=students.filter(s=>s.id!=id);
+renderAll();
+toast("Student deleted");
+
+}
+
+}
+
+
+/* ================= COMPANIES ================= */
+
+function renderCompanies(){
+
+let html="";
+
+companies.forEach((c,i)=>{
+
+html+=`
+<div class="company">
+<h3>${c.icon} ${c.name}</h3>
+<p>💼 Role: ${c.role}</p>
+<p>💰 Package: ${c.pack}</p>
+<p>📍 Location: ${c.loc}</p>
+
+<div class="actions">
+<button class="btn primary" onclick="toast('${c.name} details opened')">View Details</button>
+<button class="btn danger" onclick="deleteCompany(${i})">🗑️</button>
+</div>
+</div>`;
+
+});
+
+document.getElementById("companyGrid").innerHTML=html;
+
+}
+
+
+function openCompany(){
+
+document.querySelector("#companyModal form").reset();
+document.getElementById("companyModal").classList.add("show");
+
+}
+
+
+function saveCompany(e){
+
+e.preventDefault();
+
+companies.push({
+name:document.getElementById("cName").value,
+role:document.getElementById("cRole").value,
+pack:document.getElementById("cPackage").value,
+loc:document.getElementById("cLocation").value,
+icon:"🏢"
+});
+
+closeModal("companyModal");
+renderAll();
+toast("Company added ✓");
+
+}
+
+
+function deleteCompany(i){
+
+if(confirm("Delete company?")){
+
+companies.splice(i,1);
+renderAll();
+toast("Company deleted");
+
+}
+
+}
+
+
+/* ================= DRIVES ================= */
+
+function renderDrives(){
+
+let html="";
+
+drives.forEach((d,i)=>{
+
+html+=`
+<div class="drive">
+
+<h3>💼 ${d.company}</h3>
+
+<p>💼 <b>Role:</b> ${d.role}</p>
+<p>📅 <b>Date:</b> ${d.date}</p>
+<p>🎓 <b>Eligibility:</b> ${d.elig}</p>
+
+<div class="actions">
+<button class="btn primary" onclick="applyDrive('${d.company}','${d.role}')">
+Apply Now
+</button>
+
+<button class="btn danger" onclick="deleteDrive(${i})">
+🗑️
+</button>
+</div>
+
+</div>`;
+
+});
+
+document.getElementById("driveGrid").innerHTML=html;
+
+}
+
+
+function openDrive(){
+
+document.querySelector("#driveModal form").reset();
+document.getElementById("driveModal").classList.add("show");
+
+}
+
+
+function saveDrive(e){
+
+e.preventDefault();
+
+drives.push({
+company:document.getElementById("dCompany").value,
+role:document.getElementById("dRole").value,
+date:document.getElementById("dDate").value,
+elig:document.getElementById("dEligibility").value
+});
+
+closeModal("driveModal");
+renderAll();
+toast("Placement drive added ✓");
+
+}
+
+
+function deleteDrive(i){
+
+if(confirm("Delete this drive?")){
+
+drives.splice(i,1);
+renderAll();
+toast("Drive deleted");
+
+}
+
+}
+
+
+/* ================= APPLICATIONS ================= */
+
+function renderApplications(){
+
+let html="";
+
+applications.forEach((a,i)=>{
+
+html+=`
+<tr>
+<td>${i+101}</td>
+<td>${a.student}</td>
+<td>${a.company}</td>
+<td>${a.role}</td>
+<td>
+<span class="badge ${a.status==="Selected"?"success":"eligible"}">
+${a.status}
+</span>
+</td>
+</tr>`;
+
+});
+
+document.getElementById("applicationTable").innerHTML=html;
+
+}
+
+
+function openApplication(){
+
+let st=document.getElementById("aStudent");
+let co=document.getElementById("aCompany");
+
+st.innerHTML=students.map(s=>`<option>${s.name}</option>`).join("");
+co.innerHTML=companies.map(c=>`<option>${c.name}</option>`).join("");
+
+document.querySelector("#applicationModal form").reset();
+document.getElementById("applicationModal").classList.add("show");
+
+}
+
+
+function saveApplication(e){
+
+e.preventDefault();
+
+applications.push({
+student:document.getElementById("aStudent").value,
+company:document.getElementById("aCompany").value,
+role:document.getElementById("aRole").value,
+status:"Pending"
+});
+
+closeModal("applicationModal");
+renderApplications();
+toast("Application submitted ✓");
+
+}
+
+
+function applyDrive(company,role){
+
+openApplication();
+
+document.getElementById("aCompany").value=company;
+document.getElementById("aRole").value=role;
+
+}
+
+
+/* ================= COMMON ================= */
+
+function closeModal(id){
+
+document.getElementById(id).classList.remove("show");
+
+}
+
+
+function toast(msg){
+
+let t=document.getElementById("toast");
+t.innerText=msg;
+t.classList.add("show");
+
+setTimeout(()=>t.classList.remove("show"),2500);
+
+}
+
+
+function renderAll(){
+
+studentsTable();
+renderCompanies();
+renderDrives();
+renderApplications();
+
+document.getElementById("studentCount").innerText=students.length;
+document.getElementById("companyCount").innerText=companies.length;
+document.getElementById("driveCount").innerText=drives.length;
+document.getElementById("placedCount").innerText=
+students.filter(s=>s.status==="Placed").length;
+
+let html="";
+
+students.slice(0,5).forEach(s=>{
+
+html+=`
+<tr>
+<td>${s.id}</td>
+<td>${s.name}</td>
+<td>${s.course}</td>
+<td>Final Year</td>
+<td>
+<span class="badge ${s.status==="Placed"?"success":"eligible"}">
+${s.status}
+</span>
+</td>
+</tr>`;
+
+});
+
+document.getElementById("dashStudents").innerHTML=html;
+
+}
+
+
+/* START API */
+
+getAPI();
+
+</script>
+
+</body>
+</html>
